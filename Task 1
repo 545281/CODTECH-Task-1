@@ -1,0 +1,201 @@
+
+/*HTML CODE */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>To-Do List</h1>
+        <div class="input-group">
+            <input type="text" id="new-task" placeholder="Add a new task..." aria-label="Task">
+            <button id="add-task" aria-label="Add Task">+</button>
+        </div>
+        <ul id="task-list"></ul>
+        <button id="clear-all" aria-label="Clear All Tasks">Clear All</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
+
+/*CSS Code*/
+body {
+    font-family: 'Roboto', sans-serif;
+    background: #2277cc;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    background: #997ad7;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(151, 63, 63, 0.1);
+    padding: 30px;
+    max-width: 500px;
+    width: 110%;
+}
+
+h1 {
+    margin: 0 0 20px;
+    font-size: 24px;
+    color: #4859eb;
+}
+
+.input-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-right: 10px;
+}
+
+button {
+    padding: 10px;
+    border: none;
+    background-color: #83b1e2;
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0 0 20px;
+}
+
+li {
+    background: #f8f9fa;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    transition: background-color 0.3s ease;
+}
+
+li.completed {
+    text-decoration: line-through;
+    background-color: #d4edda;
+}
+
+li:hover {
+    background-color: #e2e6ea;
+}
+
+button.delete {
+    background-color: #dc3545;
+    margin-left: 10px;
+}
+
+button.delete:hover {
+    background-color: #c82333;
+}
+
+#clear-all {
+    background-color: #ffc107;
+}
+
+#clear-all:hover {
+    background-color: #e0a800;
+}
+
+/*Java Script Code*/
+document.addEventListener("DOMContentLoaded", () => {
+    const taskInput = document.getElementById("new-task");
+    const taskList = document.getElementById("task-list");
+    const addTaskButton = document.getElementById("add-task");
+    const clearAllButton = document.getElementById("clear-all");
+
+    // Load tasks from local storage
+    const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+    tasks.forEach(task => createTaskElement(task.text, task.completed));
+
+    // Add task using the button or Enter key
+    addTaskButton.addEventListener("click", addTask);
+    taskInput.addEventListener("keypress", function (e) {
+        if (e.key === "Enter") addTask();
+    });
+
+    // Clear all tasks
+    clearAllButton.addEventListener("click", function () {
+        localStorage.removeItem("tasks");
+        taskList.innerHTML = "";
+    });
+
+    function addTask() {
+        const taskText = taskInput.value.trim();
+        if (taskText !== "") {
+            createTaskElement(taskText);
+            saveTask(taskText);
+            taskInput.value = "";
+        } else {
+            alert("Please enter a task!");
+        }
+    }
+
+    function createTaskElement(text, completed = false) {
+        const li = document.createElement("li");
+        li.textContent = text;
+        if (completed) li.classList.add("completed");
+
+        const deleteButton = document.createElement("button");
+        deleteButton.textContent = "Delete";
+        deleteButton.className = "delete";
+        deleteButton.addEventListener("click", function () {
+            li.remove();
+            removeTask(text);
+        });
+
+        li.addEventListener("click", function () {
+            li.classList.toggle("completed");
+            toggleTaskCompletion(text);
+        });
+
+        li.appendChild(deleteButton);
+        taskList.appendChild(li);
+    }
+
+    function saveTask(text) {
+        const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+        tasks.push({ text, completed: false });
+        localStorage.setItem("tasks", JSON.stringify(tasks));
+    }
+
+    function removeTask(text) {
+        const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+        const updatedTasks = tasks.filter(task => task.text !== text);
+        localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+    }
+
+    function toggleTaskCompletion(text) {
+        const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+        const task = tasks.find(task => task.text === text);
+        if (task) {
+            task.completed = !task.completed;
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        }
+    }
+});
+
